@@ -3,6 +3,7 @@ using HP.HPTRIM.ServiceModel;
 using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -13,12 +14,13 @@ namespace ServiceAPIOpenIDConnect
 {
     public class Program
     {
+        private static NameValueCollection appsettings = ConfigurationManager.AppSettings;
         public static void Main(string[] args)
         {
             try
             {
                 string accessToken = msalAuthentication();
-                TrimClient trimClient = new TrimClient("https://localhost/cmserviceapi");
+                TrimClient trimClient = new TrimClient(appsettings["serviceAPIURL"]);
                 trimClient.AddHeader("Authorization", $"Bearer {accessToken}");
 
                 //GET
@@ -32,7 +34,6 @@ namespace ServiceAPIOpenIDConnect
                 var response = trimClient.Get<LocationsResponse>(postSearch);
 
                 //POST a record
-
                 Record record = new Record()
                 {
                     Title = "testOpenID",
@@ -55,7 +56,6 @@ namespace ServiceAPIOpenIDConnect
         }
         private static string msalAuthentication()
         {
-            var appsettings = ConfigurationManager.AppSettings;
             string[] scopes = new string[] { appsettings["scope"] };
             var pca = PublicClientApplicationBuilder.Create(appsettings["clientID"]).
                     WithAuthority(appsettings["authority"])
